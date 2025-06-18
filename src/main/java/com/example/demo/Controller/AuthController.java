@@ -30,7 +30,7 @@ public class AuthController {
     @GetMapping("/login")
     public String showLoginForm(Model model) {
         model.addAttribute("loginDTO", new LoginDTO());
-        return "login";
+        return "login"; // login.jsp
     }
 
     /**
@@ -69,7 +69,7 @@ public class AuthController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("usuario", new UsuarioRegistroDto());
-        return "register";
+        return "register"; // register.jsp
     }
 
     /**

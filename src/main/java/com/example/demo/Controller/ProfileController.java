@@ -33,10 +33,10 @@ public class ProfileController {
         Usuario usuario = usuarioRepository.findByRol("ADMIN").stream().findFirst()
                 .orElse(new Usuario());
 
-        // Pasamos el objeto usuario completo a la vista de Thymeleaf
+        // Pasamos el objeto usuario completo a la vista JSP
         model.addAttribute("usuario", usuario);
 
-        // Devolvemos el nombre del archivo HTML (sin la extensión)
+        // Devolvemos el nombre del archivo JSP (sin la extensión)
         return "perfilu";
     }
 

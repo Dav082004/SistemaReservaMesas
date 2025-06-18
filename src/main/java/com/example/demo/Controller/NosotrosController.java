@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class NosotrosController {
     @GetMapping("/nosotros")
     public String mostrarNosotros() {
-        return "nosotros"; // El nombre del archivo HTML (sin .html)
+        return "nosotros"; // nosotros.jsp
     }
 }

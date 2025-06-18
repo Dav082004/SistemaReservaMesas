@@ -46,12 +46,11 @@ public class UsuarioController {
         // Obtener reservas futuras del usuario
         List<ReservaDTO> reservasFuturas = reservaFacade.obtenerReservasFuturasUsuario(usuario);
         List<ReservaDTO> todasLasReservas = reservaFacade.obtenerReservasUsuario(usuario);
-
         model.addAttribute("usuario", usuario);
         model.addAttribute("reservasFuturas", reservasFuturas);
         model.addAttribute("todasLasReservas", todasLasReservas);
 
-        return "perfilu"; // perfilu.html
+        return "perfilu"; // perfilu.jsp
     }
 
     /**
@@ -79,24 +78,7 @@ public class UsuarioController {
         }
 
         return "redirect:/usuario/perfil";
-    }
-
-    /**
-     * Muestra el formulario para actualizar perfil
-     */
-    @GetMapping("/editar-perfil")
-    public String mostrarEditarPerfil(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioSesion(session);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Debe iniciar sesión para acceder a esta página");
-            return "redirect:/login";
-        }
-
-        model.addAttribute("usuario", usuario);
-        return "editar-perfil"; // editar-perfil.html (crear esta vista si no existe)
-    }
-
-    /**
+    }    /**
      * Actualiza la información del perfil del usuario
      */
     @PostMapping("/actualizar-perfil")
@@ -127,11 +109,9 @@ public class UsuarioController {
             session.setAttribute("nombreUsuario", usuarioGuardado.getNombreCompleto());
 
             redirectAttributes.addFlashAttribute("successMessage", "Perfil actualizado exitosamente");
-            return "redirect:/usuario/perfil";
-
-        } catch (Exception e) {
+            return "redirect:/usuario/perfil";        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/usuario/editar-perfil";
+            return "redirect:/usuario/perfil";
         }
     }
 

@@ -8,6 +8,6 @@ public class MenuController {
 
     @GetMapping("/menu")
     public String mostrarMenu() {
-        return "menu"; // Thymeleaf buscará 'menu.html' en /templates
+        return "menu"; // menu.jsp
     }
-}   
+}
