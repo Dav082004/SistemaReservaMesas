@@ -51,18 +51,6 @@ uri="http://java.sun.com/jsp/jstl/functions" %>
                   >NOSOTROS</a
                 >
               </li>
-              <c:if test="${not empty sessionScope.usuario}">
-                <li class="nav-item">
-                  <a class="nav-link" href="<c:url value='/perfil'/>">PERFIL</a>
-                </li>
-              </c:if>
-              <c:if test="${sessionScope.usuario.rol == 'ADMIN'}">
-                <li class="nav-item">
-                  <a class="nav-link active" href="<c:url value='/admin'/>"
-                    >PANEL ADMIN</a
-                  >
-                </li>
-              </c:if>
             </ul>
             <c:if test="${not empty sessionScope.usuario}">
               <div class="d-flex align-items-center">

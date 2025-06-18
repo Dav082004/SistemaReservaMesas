@@ -47,9 +47,6 @@ uri="http://www.springframework.org/tags/form" %>
                   >NOSOTROS</a
                 >
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/perfil'/>">PERFIL</a>
-              </li>
             </ul>
             <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
               <img

@@ -1,15 +1,9 @@
-package com.example.demo.Entities;
+package com.example.demo.dto;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "Reserva")
-public class Reserva {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ReservaDTO {
     private Integer idReserva;
-
     private String nombreCliente;
     private String correoCliente;
     private String telefonoCliente;
@@ -17,25 +11,19 @@ public class Reserva {
     private Integer numeroPersonas;
     private String estado;
     private String comentarios;
-
-    @ManyToOne
-    @JoinColumn(name = "idFranja", nullable = false)
-    private ConfiguracionFranja franja;
-
-    @ManyToOne
-    @JoinColumn(name = "idMesa", nullable = false)
-    private Mesa mesa;
-
-    @ManyToOne
-    @JoinColumn(name = "idUsuario")
-    private Usuario usuario;
+    private String franjaHoraria;
+    private String tipoMesa;
+    private Integer numeroMesa;
 
     // Constructores
-    public Reserva() {
+    public ReservaDTO() {
     }
 
-    public Reserva(String nombreCliente, String correoCliente, String telefonoCliente,
-            LocalDate fecha, Integer numeroPersonas, String estado, String comentarios) {
+    public ReservaDTO(Integer idReserva, String nombreCliente, String correoCliente,
+            String telefonoCliente, LocalDate fecha, Integer numeroPersonas,
+            String estado, String comentarios, String franjaHoraria,
+            String tipoMesa, Integer numeroMesa) {
+        this.idReserva = idReserva;
         this.nombreCliente = nombreCliente;
         this.correoCliente = correoCliente;
         this.telefonoCliente = telefonoCliente;
@@ -43,6 +31,9 @@ public class Reserva {
         this.numeroPersonas = numeroPersonas;
         this.estado = estado;
         this.comentarios = comentarios;
+        this.franjaHoraria = franjaHoraria;
+        this.tipoMesa = tipoMesa;
+        this.numeroMesa = numeroMesa;
     }
 
     // Getters y Setters
@@ -110,39 +101,40 @@ public class Reserva {
         this.comentarios = comentarios;
     }
 
-    public ConfiguracionFranja getFranja() {
-        return franja;
+    public String getFranjaHoraria() {
+        return franjaHoraria;
     }
 
-    public void setFranja(ConfiguracionFranja franja) {
-        this.franja = franja;
+    public void setFranjaHoraria(String franjaHoraria) {
+        this.franjaHoraria = franjaHoraria;
     }
 
-    public Mesa getMesa() {
-        return mesa;
+    public String getTipoMesa() {
+        return tipoMesa;
     }
 
-    public void setMesa(Mesa mesa) {
-        this.mesa = mesa;
+    public void setTipoMesa(String tipoMesa) {
+        this.tipoMesa = tipoMesa;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Integer getNumeroMesa() {
+        return numeroMesa;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setNumeroMesa(Integer numeroMesa) {
+        this.numeroMesa = numeroMesa;
     }
 
     @Override
     public String toString() {
-        return "Reserva{" +
+        return "ReservaDTO{" +
                 "idReserva=" + idReserva +
                 ", nombreCliente='" + nombreCliente + '\'' +
-                ", correoCliente='" + correoCliente + '\'' +
                 ", fecha=" + fecha +
                 ", numeroPersonas=" + numeroPersonas +
                 ", estado='" + estado + '\'' +
+                ", franjaHoraria='" + franjaHoraria + '\'' +
+                ", tipoMesa='" + tipoMesa + '\'' +
                 '}';
     }
 }

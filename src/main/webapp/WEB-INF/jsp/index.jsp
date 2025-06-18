@@ -48,25 +48,47 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                 <a class="nav-link" href="<c:url value='/nosotros'/>"
                   >NOSOTROS</a
                 >
-              </li>
-              <!-- Todas las opciones del menú disponibles para todos -->
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/perfil'/>">PERFIL</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/admin'/>"
-                  >PANEL ADMIN</a
-                >
-              </li>
-            </ul>
-            <!-- Enlace de login simple (sin autenticación) -->
-            <div>
-              <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
-                <img
-                  src="<c:url value='/images/user3.png'/>"
-                  alt="Ícono de usuario" />
-              </a>
-            </div>
+              </li>            </ul>
+            <!-- Mostrar información de usuario o enlace de login -->
+            <c:choose>
+              <c:when test="${not empty sessionScope.usuario}">
+                <div class="d-flex align-items-center">
+                  <span class="navbar-text me-3">
+                    Hola,
+                    <strong>${sessionScope.usuario.nombreCompleto}</strong>
+                  </span>
+                  <!-- Dropdown del usuario -->
+                  <div class="dropdown">
+                    <a class="dropdown-toggle d-flex align-items-center text-decoration-none" 
+                       href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <img src="<c:url value='/images/user3.png'/>" 
+                           alt="Ícono de usuario" 
+                           style="width: 40px; height: 40px; border-radius: 50%;">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                      <li>                        <a class="dropdown-item" href="<c:url value='/usuario/perfil'/>">
+                          <i class="bi bi-person-circle me-2"></i>Ver Perfil
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('logoutForm').submit();">
+                          <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <!-- Formulario oculto para logout -->
+                  <form id="logoutForm" action="<c:url value='/logout'/>" method="post" style="display: none;">
+                  </form>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
+                  <img src="<c:url value='/images/user3.png'/>" alt="Ícono de usuario">
+                </a>
+              </c:otherwise>
+            </c:choose>
           </div>
         </div>
       </nav>

@@ -46,9 +46,6 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                   >NOSOTROS</a
                 >
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/perfil'/>">PERFIL</a>
-              </li>
             </ul>
             <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
               <img
@@ -89,21 +86,21 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
               </c:if>
               <form method="post" action="<c:url value='/login'/>">
                 <div class="mb-3">
-                  <label for="username" class="form-label">Usuario</label>
+                  <label for="usuario" class="form-label">Usuario</label>
                   <input
                     type="text"
-                    id="username"
-                    name="username"
+                    id="usuario"
+                    name="usuario"
                     class="form-control"
                     required
                     autofocus />
                 </div>
                 <div class="mb-3">
-                  <label for="password" class="form-label">Contraseña</label>
+                  <label for="contrasena" class="form-label">Contraseña</label>
                   <input
                     type="password"
-                    id="password"
-                    name="password"
+                    id="contrasena"
+                    name="contrasena"
                     class="form-control"
                     required />
                 </div>

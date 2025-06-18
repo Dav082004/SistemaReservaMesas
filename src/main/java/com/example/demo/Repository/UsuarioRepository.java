@@ -34,4 +34,20 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
      * @return Una lista de usuarios con el rol especificado.
      */
     List<Usuario> findByRol(String rol);
+
+    /**
+     * Verifica si existe un usuario con el nombre de usuario dado.
+     * 
+     * @param usuario El nombre de usuario a verificar.
+     * @return true si existe, false en caso contrario.
+     */
+    boolean existsByUsuario(String usuario);
+
+    /**
+     * Verifica si existe un usuario con el correo dado.
+     * 
+     * @param correo El correo a verificar.
+     * @return true si existe, false en caso contrario.
+     */
+    boolean existsByCorreo(String correo);
 }

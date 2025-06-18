@@ -41,8 +41,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
               <li class="nav-item">
                 <a class="nav-link" href="<c:url value='/menu'/>">MENU</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/reservaciones'/>"
+              <li class="nav-item">                <a class="nav-link" href="<c:url value='/reservaciones'/>"
                   >RESERVACIONES</a
                 >
               </li>
@@ -50,37 +49,47 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                 <a class="nav-link" href="<c:url value='/nosotros'/>"
                   >NOSOTROS</a
                 >
-              </li>
-              <c:if test="${not empty sessionScope.usuario}">
-                <li class="nav-item">
-                  <a class="nav-link active" href="<c:url value='/perfil'/>"
-                    >PERFIL</a
-                  >
-                </li>
-              </c:if>
-              <c:if test="${sessionScope.usuario.rol == 'ADMIN'}">
-                <li class="nav-item">
-                  <a class="nav-link" href="<c:url value='/admin'/>"
-                    >PANEL ADMIN</a
-                  >
-                </li>
-              </c:if>
-            </ul>
-            <c:if test="${not empty sessionScope.usuario}">
-              <div class="d-flex align-items-center">
-                <span class="navbar-text me-3">
-                  Hola, <strong>${sessionScope.usuario.usuario}</strong>
-                </span>
-                <form
-                  action="<c:url value='/logout'/>"
-                  method="post"
-                  class="d-inline">
-                  <button class="btn btn-outline-danger btn-sm" type="submit">
-                    Cerrar Sesión
-                  </button>
-                </form>
-              </div>
-            </c:if>
+              </li>            </ul>
+            <!-- Mostrar información de usuario o enlace de login -->
+            <c:choose>
+              <c:when test="${not empty sessionScope.usuario}">
+                <div class="d-flex align-items-center">
+                  <span class="navbar-text me-3">
+                    Hola,
+                    <strong>${sessionScope.usuario.nombreCompleto}</strong>
+                  </span>
+                  <!-- Dropdown del usuario -->
+                  <div class="dropdown">
+                    <a class="dropdown-toggle d-flex align-items-center text-decoration-none" 
+                       href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <img src="<c:url value='/images/user3.png'/>" 
+                           alt="Ícono de usuario" 
+                           style="width: 40px; height: 40px; border-radius: 50%;">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">                      <li>
+                        <a class="dropdown-item" href="<c:url value='/usuario/perfil'/>">
+                          <i class="bi bi-person-circle me-2"></i>Ver Perfil
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('logoutForm').submit();">
+                          <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <!-- Formulario oculto para logout -->
+                  <form id="logoutForm" action="<c:url value='/logout'/>" method="post" style="display: none;">
+                  </form>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
+                  <img src="<c:url value='/images/user3.png'/>" alt="Ícono de usuario">
+                </a>
+              </c:otherwise>
+            </c:choose>
           </div>
         </div>
       </nav>
@@ -97,11 +106,10 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
               <img
                 src="<c:url value='/images/admin-placeholder.png'/>"
                 class="rounded-circle mb-3"
-                width="120"
-                height="120"
+                width="120"                height="120"
                 alt="Foto perfil" />
-              <h5 class="card-title">${usuario.usuario}</h5>
-              <p class="card-text">${usuario.correo}</p>
+              <h5 class="card-title">${sessionScope.usuarioLogueado.usuario}</h5>
+              <p class="card-text">${sessionScope.usuarioLogueado.correo}</p>
             </div>
           </div>
         </div>
@@ -123,7 +131,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
             <div class="card-body">
               <form
                 id="form-perfil"
-                action="<c:url value='/perfil/actualizar'/>"
+                action="<c:url value='/usuario/actualizar-perfil'/>"
                 method="post">
                 <div class="row g-3">
                   <div class="col-md-6">
@@ -132,7 +140,7 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                       type="text"
                       class="form-control"
                       name="nombreCompleto"
-                      value="${usuario.nombreCompleto}"
+                      value="${sessionScope.usuarioLogueado.nombreCompleto}"
                       required />
                   </div>
                   <div class="col-md-6">
@@ -141,16 +149,15 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                       type="email"
                       class="form-control"
                       name="correo"
-                      value="${usuario.correo}"
+                      value="${sessionScope.usuarioLogueado.correo}"
                       disabled />
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Teléfono</label>
                     <input
                       type="text"
-                      class="form-control"
-                      name="telefono"
-                      value="${usuario.telefono}" />
+                      class="form-control"                      name="telefono"
+                      value="${sessionScope.usuarioLogueado.telefono}" />
                   </div>
                   <div class="col-12 d-flex justify-content-end mt-3">
                     <button type="submit" class="btn btn-success">
@@ -212,8 +219,134 @@ prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
                       Actualizar Contraseña
                     </button>
                   </div>
+                </div>              </form>
+            </div>
+          </div>
+
+          <!-- Mis Reservas -->
+          <div class="card shadow-sm mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Mis Reservas</span>
+              <a href="<c:url value='/reservaciones'/>" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Nueva Reserva
+              </a>
+            </div>
+            <div class="card-body">
+              <c:choose>
+                <c:when test="${not empty reservasFuturas}">
+                  <h6 class="text-success mb-3">
+                    <i class="bi bi-calendar-check"></i> Próximas Reservas
+                  </h6>
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Hora</th>
+                          <th>Personas</th>
+                          <th>Tipo Mesa</th>
+                          <th>Estado</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <c:forEach var="reserva" items="${reservasFuturas}">
+                          <tr>
+                            <td>${reserva.fecha}</td>
+                            <td>${reserva.franjaHoraria}</td>
+                            <td>${reserva.numeroPersonas}</td>
+                            <td>${reserva.tipoMesa}</td>
+                            <td>
+                              <c:choose>
+                                <c:when test="${reserva.estado == 'POR_CONFIRMAR'}">
+                                  <span class="badge bg-warning">Por Confirmar</span>
+                                </c:when>
+                                <c:when test="${reserva.estado == 'CONFIRMADA'}">
+                                  <span class="badge bg-success">Confirmada</span>
+                                </c:when>
+                                <c:when test="${reserva.estado == 'CANCELADA'}">
+                                  <span class="badge bg-danger">Cancelada</span>
+                                </c:when>
+                                <c:otherwise>
+                                  <span class="badge bg-secondary">${reserva.estado}</span>
+                                </c:otherwise>
+                              </c:choose>
+                            </td>
+                            <td>
+                              <c:if test="${reserva.estado != 'CANCELADA'}">
+                                <form action="<c:url value='/usuario/cancelar-reserva/${reserva.idReserva}'/>" 
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Está seguro de cancelar esta reserva?')">
+                                  <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                  </button>
+                                </form>
+                              </c:if>
+                            </td>
+                          </tr>
+                        </c:forEach>
+                      </tbody>
+                    </table>
+                  </div>
+                </c:when>
+                <c:otherwise>
+                  <div class="text-center py-4">
+                    <i class="bi bi-calendar-x display-4 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No tienes reservas próximas</h5>
+                    <p class="text-muted">¡Haz tu primera reserva y disfruta de nuestros deliciosos platos!</p>
+                    <a href="<c:url value='/reservaciones'/>" class="btn btn-primary">
+                      <i class="bi bi-plus-circle"></i> Hacer Reserva
+                    </a>
+                  </div>
+                </c:otherwise>
+              </c:choose>
+
+              <c:if test="${not empty todasLasReservas}">
+                <hr class="my-4">
+                <h6 class="text-info mb-3">
+                  <i class="bi bi-clock-history"></i> Historial de Reservas
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Personas</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <c:forEach var="reserva" items="${todasLasReservas}">
+                        <tr>
+                          <td>${reserva.fecha}</td>
+                          <td>${reserva.franjaHoraria}</td>
+                          <td>${reserva.numeroPersonas}</td>
+                          <td>
+                            <c:choose>
+                              <c:when test="${reserva.estado == 'POR_CONFIRMAR'}">
+                                <span class="badge bg-warning">Por Confirmar</span>
+                              </c:when>
+                              <c:when test="${reserva.estado == 'CONFIRMADA'}">
+                                <span class="badge bg-success">Confirmada</span>
+                              </c:when>
+                              <c:when test="${reserva.estado == 'CANCELADA'}">
+                                <span class="badge bg-danger">Cancelada</span>
+                              </c:when>
+                              <c:when test="${reserva.estado == 'NO_SE_PRESENTO'}">
+                                <span class="badge bg-dark">No se presentó</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="badge bg-secondary">${reserva.estado}</span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                        </tr>
+                      </c:forEach>
+                    </tbody>
+                  </table>
                 </div>
-              </form>
+              </c:if>
             </div>
           </div>
         </div>

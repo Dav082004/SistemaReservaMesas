@@ -1,92 +1,126 @@
 package com.example.demo.Controller;
 
-import com.example.demo.dto.DisponibilidadTipoMesaDTO;
-import com.example.demo.dto.FranjaDisponibleDTO;
+import com.example.demo.facade.ReservaFacade;
 import com.example.demo.dto.ReservaFormDTO;
 import com.example.demo.Entities.Usuario;
-import com.example.demo.Repository.TipoMesaRepository;
-import com.example.demo.Repository.UsuarioRepository;
-import com.example.demo.Services.ReservaService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
+/**
+ * Controlador para las reservas
+ * Refactorizado para usar el patrón Facade y requerir autenticación
+ */
 @Controller
 public class ReservaController {
 
-    private final ReservaService reservaService;
-    private final UsuarioRepository usuarioRepository;
-    private final TipoMesaRepository tipoMesaRepository;
+    private final ReservaFacade reservaFacade;
 
-    public ReservaController(ReservaService reservaService, UsuarioRepository usuarioRepository,
-            TipoMesaRepository tipoMesaRepository) {
-        this.reservaService = reservaService;
-        this.usuarioRepository = usuarioRepository;
-        this.tipoMesaRepository = tipoMesaRepository;
+    public ReservaController(ReservaFacade reservaFacade) {
+        this.reservaFacade = reservaFacade;
     }
 
+    /**
+     * Muestra el formulario de reserva
+     */
     @GetMapping("/reservaciones")
-    public String mostrarFormularioReserva(Model model) {
-        // Creamos el objeto DTO que usará el formulario
-        ReservaFormDTO reservaForm = new ReservaFormDTO();
+    public String mostrarFormularioReserva(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        // Obtener usuario de la sesión (puede ser null)
+        Usuario usuario = obtenerUsuarioSesion(session);
 
-        // Sin autenticación, dejamos el formulario vacío para que el usuario lo
-        // complete
+        // Si el usuario está logueado, preparar el formulario
+        if (usuario != null) {
+            // Verificar que es un usuario normal (no admin)
+            if ("ADMIN".equals(usuario.getRol())) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Los administradores no pueden hacer reservas desde aquí");
+                return "redirect:/admin";
+            }
 
-        // Pasamos el DTO vacío al modelo
-        model.addAttribute("reservaForm", reservaForm);
+            // Crear el formulario con datos del usuario
+            ReservaFormDTO reservaForm = new ReservaFormDTO();
+            reservaForm.setNombreCliente(usuario.getNombreCompleto());
+            reservaForm.setCorreoCliente(usuario.getCorreo());
+            reservaForm.setTelefonoCliente(usuario.getTelefono());
 
-        // Pasamos los otros datos necesarios para la vista
-        model.addAttribute("tiposDeMesa", tipoMesaRepository.findAll());
-        model.addAttribute("fechaMin", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        model.addAttribute("fechaMax", "2025-12-31");
+            model.addAttribute("reservaForm", reservaForm);
+            model.addAttribute("tiposDeMesa", reservaFacade.obtenerTiposMesa());
+            model.addAttribute("franjasHorarias", reservaFacade.obtenerFranjasHorarias());
+            model.addAttribute("fechaMin", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+            model.addAttribute("fechaMax", LocalDate.now().plusMonths(2).format(DateTimeFormatter.ISO_LOCAL_DATE));
+            model.addAttribute("usuario", usuario);
+        }
 
+        // Siempre ir a la página de reservaciones (el JSP decide qué mostrar)
         return "reservaciones";
     }
 
-    // API para obtener la disponibilidad de franjas dinámicamente con JavaScript
-    @GetMapping("/api/disponibilidad")
+    /**
+     * API para verificar disponibilidad (AJAX)
+     */
+    @GetMapping("/api/verificar-disponibilidad")
     @ResponseBody
-    public List<FranjaDisponibleDTO> getDisponibilidad(@RequestParam String fecha) {
-        LocalDate fechaSeleccionada = LocalDate.parse(fecha);
-        return reservaService.getDisponibilidadFranjas(fechaSeleccionada);
+    public boolean verificarDisponibilidad(@RequestParam String fecha,
+            @RequestParam Integer idFranja,
+            @RequestParam Integer numeroPersonas,
+            @RequestParam Integer idTipoMesa) {
+        try {
+            LocalDate fechaSeleccionada = LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE);
+            return reservaFacade.verificarDisponibilidad(fechaSeleccionada, idFranja, numeroPersonas, idTipoMesa);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    // --- NUEVO ENDPOINT DE API ---
-    @GetMapping("/api/disponibilidad-tipos")
+    /**
+     * API para calcular mesas necesarias (AJAX)
+     */
+    @GetMapping("/api/calcular-mesas")
     @ResponseBody
-    public List<DisponibilidadTipoMesaDTO> getDisponibilidadTipos(@RequestParam String fecha,
-            @RequestParam Integer idFranja) {
-        LocalDate fechaSeleccionada = LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE);
-        return reservaService.getDisponibilidadPorTipoMesa(fechaSeleccionada, idFranja);
+    public int calcularMesasNecesarias(@RequestParam Integer numeroPersonas) {
+        return reservaFacade.calcularMesasNecesarias(numeroPersonas);
     }
 
+    /**
+     * Procesa la creación de una reserva
+     */
     @PostMapping("/reservaciones/crear")
     public String procesarReserva(@ModelAttribute("reservaForm") ReservaFormDTO formDTO,
+            HttpSession session,
             RedirectAttributes redirectAttributes) {
-        try {
-            // Para permitir reservas anónimas, usaremos un usuario por defecto o null
-            // Podemos usar el primer usuario admin como usuario por defecto
-            String username = usuarioRepository.findByRol("ADMIN").stream().findFirst()
-                    .map(Usuario::getUsuario)
-                    .orElse("admin"); // Fallback si no hay admin
-
-            reservaService.crearReserva(formDTO, username);
-            redirectAttributes.addFlashAttribute("successMessage", "¡Tu reserva ha sido confirmada exitosamente!");
-        } catch (IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al crear la reserva: " + e.getMessage());
+        // Verificar que el usuario esté logueado
+        Usuario usuario = obtenerUsuarioSesion(session);
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Debe iniciar sesión para hacer una reserva");
+            return "redirect:/login";
         }
 
-        return "redirect:/reservaciones";
+        try {
+            // Crear la reserva usando el facade
+            reservaFacade.crearReserva(formDTO, usuario);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "¡Tu reserva ha sido creada exitosamente! Estado: Por confirmar");
+            return "redirect:/usuario/perfil";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error al crear la reserva: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("reservaForm", formDTO);
+            return "redirect:/reservaciones";
+        }
+    }
+
+    /**
+     * Método helper para obtener el usuario de la sesión
+     */
+    private Usuario obtenerUsuarioSesion(HttpSession session) {
+        return (Usuario) session.getAttribute("usuarioLogueado");
     }
 }
