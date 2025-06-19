@@ -2,6 +2,7 @@ package com.example.demo.facade;
 
 import com.example.demo.dto.ReservaFormDTO;
 import com.example.demo.dto.ReservaDTO;
+import com.example.demo.dto.DisponibilidadDTO;
 import com.example.demo.Entities.Reserva;
 import com.example.demo.Entities.Usuario;
 import com.example.demo.Entities.TipoMesa;
@@ -39,6 +40,15 @@ public interface ReservaFacade {
      * Verifica la disponibilidad para una fecha y franja
      */
     boolean verificarDisponibilidad(LocalDate fecha, Integer idFranja, Integer numeroPersonas, Integer idTipoMesa);
+
+    /**
+     * Consulta la disponibilidad para una fecha específica y número de personas
+     * 
+     * @param fecha Fecha para consultar disponibilidad
+     * @param numeroPersonas Número de personas para la reserva
+     * @return Lista de disponibilidades por franja horaria
+     */
+    List<DisponibilidadDTO> consultarDisponibilidadPorFecha(LocalDate fecha, Integer numeroPersonas);
 
     /**
      * Calcula el número de mesas necesarias según el número de personas
