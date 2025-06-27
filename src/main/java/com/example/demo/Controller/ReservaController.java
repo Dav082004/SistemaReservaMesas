@@ -2,7 +2,6 @@ package com.example.demo.Controller;
 
 import com.example.demo.dto.ReservaFormDTO;
 import com.example.demo.dto.FranjaHorariaDTO;
-import com.example.demo.Entities.TipoMesa;
 import com.example.demo.Entities.Usuario;
 import com.example.demo.Services.ReservaService;
 import com.example.demo.Services.TipoMesaService;
@@ -29,17 +28,39 @@ public class ReservaController {
     }
 
     @GetMapping("/reservaciones")
-    public String mostrarFormularioReservaciones(Model model) {
-        model.addAttribute("fechaMin", LocalDate.now().toString());
+    public String mostrarFormularioReservaciones(@RequestParam(value = "fecha", required = false) String fechaStr,
+            Model model, HttpSession session) {
+        // Autocompletar datos del usuario
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        ReservaFormDTO reservaForm = new ReservaFormDTO();
+        if (usuario != null) {
+            reservaForm.setNombreCliente(usuario.getNombreCompleto());
+            reservaForm.setTelefonoCliente(usuario.getTelefono());
+            reservaForm.setCorreoCliente(usuario.getCorreo());
+        }
+        List<FranjaHorariaDTO> franjas = Collections.emptyList();
+        System.out.println("Fecha recibida: " + fechaStr);
+        if (fechaStr != null && !fechaStr.isEmpty()) {
+            LocalDate fecha = LocalDate.parse(fechaStr);
+            franjas = reservaService.getDisponibilidadPorFecha(fecha);
+            reservaForm.setFecha(fecha);
+            System.out.println("Franjas encontradas: " + franjas.size());
+        }
+        model.addAttribute("reservaForm", reservaForm);
+        model.addAttribute("franjasHorarias", franjas);
+        model.addAttribute("fechaSeleccionada", fechaStr);
+        model.addAttribute("fechaMin", "2025-01-01");
         model.addAttribute("fechaMax", "2025-12-31");
         model.addAttribute("tiposDeMesa", tipoMesaService.obtenerTodosLosTipos());
         return "reservaciones";
     }
 
     @PostMapping("/reservaciones")
-    public String procesarReserva(@ModelAttribute ReservaFormDTO reservaDTO, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String procesarReserva(@ModelAttribute ReservaFormDTO reservaDTO, HttpSession session,
+            RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
-        if (usuario == null) return "redirect:/login";
+        if (usuario == null)
+            return "redirect:/login";
         try {
             reservaService.crearReserva(reservaDTO, usuario);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tu reserva ha sido registrada con éxito!");
@@ -47,23 +68,6 @@ public class ReservaController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/reservaciones";
-        }
-    }
-
-    @RestController
-    @RequestMapping("/api/disponibilidad")
-    public static class DisponibilidadApiController {
-        private final ReservaService reservaService;
-
-        @Autowired
-        public DisponibilidadApiController(ReservaService reservaService) { this.reservaService = reservaService; }
-
-        @GetMapping("/franjas")
-        public List<FranjaHorariaDTO> getDisponibilidad(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-            if (fecha == null) {
-                return Collections.emptyList();
-            }
-            return reservaService.getDisponibilidadPorFecha(fecha);
         }
     }
 }

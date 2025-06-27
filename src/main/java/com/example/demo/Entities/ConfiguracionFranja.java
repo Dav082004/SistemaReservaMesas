@@ -1,6 +1,5 @@
 package com.example.demo.Entities;
 
-
 public class ConfiguracionFranja {
 
     private int idFranja;

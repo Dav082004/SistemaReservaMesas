@@ -7,6 +7,8 @@ import com.example.demo.Entities.Reserva;
 import com.example.demo.Entities.Usuario;
 import com.example.demo.Repository.MesaRepository;
 import com.example.demo.Repository.ReservaRepository;
+import com.example.demo.Repository.ConfiguracionFranjaRepository;
+import com.example.demo.Entities.ConfiguracionFranja;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +20,14 @@ import java.util.stream.Collectors;
 public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final MesaRepository mesaRepository;
-    private static final Map<Integer, String> FRANJAS_HORARIAS = Map.of(1, "10:00 - 12:00", 2, "12:00 - 14:00", 3, "14:00 - 16:00", 4, "16:00 - 18:00", 5, "18:00 - 20:00", 6, "20:00 - 22:00", 7, "22:00 - 00:00");
+    private final ConfiguracionFranjaRepository configuracionFranjaRepository;
 
     @Autowired
-    public ReservaService(ReservaRepository reservaRepository, MesaRepository mesaRepository) {
+    public ReservaService(ReservaRepository reservaRepository, MesaRepository mesaRepository,
+            ConfiguracionFranjaRepository configuracionFranjaRepository) {
         this.reservaRepository = reservaRepository;
         this.mesaRepository = mesaRepository;
+        this.configuracionFranjaRepository = configuracionFranjaRepository;
     }
 
     public List<FranjaHorariaDTO> getDisponibilidadPorFecha(LocalDate fecha) {
@@ -31,14 +35,18 @@ public class ReservaService {
         if (fecha.getYear() != 2025) {
             return Collections.emptyList();
         }
+        List<ConfiguracionFranja> franjasBD = configuracionFranjaRepository.findAll();
         List<Mesa> todasLasMesas = mesaRepository.findAll();
-        return FRANJAS_HORARIAS.entrySet().stream().map(franjaEntry -> {
-            int idFranja = franjaEntry.getKey();
+        System.out.println("Mesas totales en BD: " + todasLasMesas.size());
+        List<FranjaHorariaDTO> resultado = new ArrayList<>();
+        for (ConfiguracionFranja franja : franjasBD) {
+            int idFranja = franja.getIdFranja();
             Set<Integer> mesasOcupadasIds = reservaRepository.findMesasOcupadasIds(fecha, idFranja);
-            int mesasDisponibles = todasLasMesas.size() - mesasOcupadasIds.size();
-            boolean casiLleno = mesasOcupadasIds.size() > (todasLasMesas.size() * 0.7);
-            return new FranjaHorariaDTO(idFranja, franjaEntry.getValue(), mesasDisponibles, casiLleno);
-        }).collect(Collectors.toList());
+            int mesasDisponibles = franja.getCantidadMesas() - mesasOcupadasIds.size();
+            boolean casiLleno = mesasOcupadasIds.size() > (franja.getCantidadMesas() * 0.7);
+            resultado.add(new FranjaHorariaDTO(idFranja, franja.getFranjaHoraria(), mesasDisponibles, casiLleno));
+        }
+        return resultado;
     }
 
     @Transactional
@@ -46,15 +54,17 @@ public class ReservaService {
         if (reservaRepository.countByUsuarioAndFecha(usuario.getIdUsuario(), reservaDTO.getFecha()) > 0) {
             throw new Exception("Ya tienes una reserva para este día. Solo se permite una reserva diaria por usuario.");
         }
-        Set<Integer> mesasOcupadasIds = reservaRepository.findMesasOcupadasIds(reservaDTO.getFecha(), reservaDTO.getIdFranja());
+        Set<Integer> mesasOcupadasIds = reservaRepository.findMesasOcupadasIds(reservaDTO.getFecha(),
+                reservaDTO.getIdFranja());
         Optional<Mesa> mesaAsignadaOpt = mesaRepository.findAll().stream()
-                .filter(mesa -> mesa.getIdTipoMesa() == reservaDTO.getIdTipoMesa() && !mesasOcupadasIds.contains(mesa.getIdMesa()))
+                .filter(mesa -> mesa.getIdTipoMesa() == reservaDTO.getIdTipoMesa()
+                        && !mesasOcupadasIds.contains(mesa.getIdMesa()))
                 .findFirst();
 
         if (mesaAsignadaOpt.isEmpty()) {
             throw new Exception("Lo sentimos, no hay mesas de ese tipo disponibles en el horario seleccionado.");
         }
-        
+
         Reserva nuevaReserva = new Reserva();
         nuevaReserva.setNombreCliente(usuario.getNombreCompleto());
         nuevaReserva.setCorreoCliente(usuario.getCorreo());
