@@ -48,9 +48,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/css/**")
                 .addResourceLocations("/css/");
         
-        // Mapea URLs /js/** a archivos en /webapp/js/
-        registry.addResourceHandler("/js/**")
-                .addResourceLocations("/js/");
         
         // Mapea URLs /images/** a archivos en /webapp/images/
         registry.addResourceHandler("/images/**")

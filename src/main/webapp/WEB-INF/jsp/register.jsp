@@ -1,6 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> <%@ taglib prefix="form"
-uri="http://www.springframework.org/tags/form" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -13,49 +12,37 @@ uri="http://www.springframework.org/tags/form" %>
   </head>
 
   <body>
-    <!-- Navbar -->
+    <!-- Navbar (igual que antes, no se muestra por brevedad) -->
     <header class="top-navbar">
-      <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-          <a class="navbar-brand" href="<c:url value='/'/>">
-            <img
-              src="<c:url value='/images/47sopas.png'/>"
-              alt="Logo Siete Sopas" />
-          </a>
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto ms-4">
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/'/>">INICIO</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/menu'/>">MENU</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/reservaciones'/>"
-                  >RESERVACIONES</a
-                >
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="<c:url value='/nosotros'/>"
-                  >NOSOTROS</a
-                >
-              </li>
-            </ul>
-            <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
-              <img
-                src="<c:url value='/images/user3.png'/>"
-                alt="Ícono de usuario" />
-            </a>
-          </div>
-        </div>
-      </nav>
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand" href="<c:url value='/'/>">
+                    <img src="<c:url value='/images/47sopas.png'/>" alt="Logo Siete Sopas" />
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="<c:url value='/'/>">INICIO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<c:url value='/menu'/>">MENU</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<c:url value='/reservaciones'/>">RESERVACIONES</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<c:url value='/nosotros'/>">NOSOTROS</a>
+                        </li>
+                    </ul>
+                    <a class="navbar-brand login-icon" href="<c:url value='/login'/>">
+                        <img src="<c:url value='/images/user3.png'/>" alt="Ícono de usuario" />
+                    </a>
+                </div>
+            </div>
+        </nav>
     </header>
 
     <div class="container mt-5">
@@ -72,69 +59,35 @@ uri="http://www.springframework.org/tags/form" %>
                 </div>
               </c:if>
 
-              <form:form
-                action="${pageContext.request.contextPath}/register"
-                modelAttribute="usuario"
-                method="post">
+              <!-- Se usa un formulario HTML estándar -->
+              <form action="<c:url value='/register'/>" method="post">
                 <div class="mb-3">
-                  <label for="nombreCompleto" class="form-label"
-                    >Nombre Completo</label
-                  >
-                  <form:input
-                    id="nombreCompleto"
-                    type="text"
-                    path="nombreCompleto"
-                    class="form-control"
-                    required="true" />
+                  <label for="nombreCompleto" class="form-label">Nombre Completo</label>
+                  <input id="nombreCompleto" type="text" name="nombreCompleto" class="form-control" required />
                 </div>
                 <div class="mb-3">
                   <label for="telefono" class="form-label">Teléfono</label>
-                  <form:input
-                    id="telefono"
-                    type="text"
-                    path="telefono"
-                    class="form-control" />
+                  <input id="telefono" type="text" name="telefono" class="form-control" />
                 </div>
                 <div class="mb-3">
-                  <label for="correo" class="form-label"
-                    >Correo Electrónico</label
-                  >
-                  <form:input
-                    id="correo"
-                    type="email"
-                    path="correo"
-                    class="form-control"
-                    required="true" />
+                  <label for="correo" class="form-label">Correo Electrónico</label>
+                  <input id="correo" type="email" name="correo" class="form-control" required />
                 </div>
                 <div class="mb-3">
-                  <label for="usuario" class="form-label"
-                    >Nombre de Usuario</label
-                  >
-                  <form:input
-                    id="usuario"
-                    type="text"
-                    path="usuario"
-                    class="form-control"
-                    required="true" />
+                  <label for="usuario" class="form-label">Nombre de Usuario</label>
+                  <input id="usuario" type="text" name="usuario" class="form-control" required />
                 </div>
                 <div class="mb-3">
                   <label for="contrasena" class="form-label">Contraseña</label>
-                  <form:input
-                    id="contrasena"
-                    type="password"
-                    path="contrasena"
-                    class="form-control"
-                    required="true" />
+                  <input id="contrasena" type="password" name="contrasena" class="form-control" required />
                 </div>
-                <button
-                  type="submit"
-                  class="btn btn-success w-100 fw-bold mb-2">
+                <button type="submit" class="btn btn-success w-100 fw-bold mb-2">
                   Registrarse
                 </button>
-                <a class="btn btn-link w-100" href="<c:url value='/login'/>"
-                  >¿Ya tienes cuenta? Inicia sesión</a
-                >
-              </form:form>
+                <a class="btn btn-link w-100" href="<c:url value='/login'/>">
+                  ¿Ya tienes cuenta? Inicia sesión
+                </a>
+              </form>
             </div>
           </div>
         </div>

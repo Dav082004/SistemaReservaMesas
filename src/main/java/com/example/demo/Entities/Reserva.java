@@ -1,56 +1,32 @@
 package com.example.demo.Entities;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "Reserva")
-public class Reserva {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idReserva;
 
+public class Reserva {
+
+    private int idReserva;
     private String nombreCliente;
     private String correoCliente;
     private String telefonoCliente;
     private LocalDate fecha;
-    private Integer numeroPersonas;
+    private int numeroPersonas;
     private String estado;
     private String comentarios;
+    private int idFranja;
+    private int idMesa;
+    private Integer idUsuario; // Usamos Integer para permitir valores nulos (null)
 
-    @ManyToOne
-    @JoinColumn(name = "idFranja", nullable = false)
-    private ConfiguracionFranja franja;
-
-    @ManyToOne
-    @JoinColumn(name = "idMesa", nullable = false)
-    private Mesa mesa;
-
-    @ManyToOne
-    @JoinColumn(name = "idUsuario")
-    private Usuario usuario;
-
-    // Constructores
+    // Constructor vacío
     public Reserva() {
     }
 
-    public Reserva(String nombreCliente, String correoCliente, String telefonoCliente,
-            LocalDate fecha, Integer numeroPersonas, String estado, String comentarios) {
-        this.nombreCliente = nombreCliente;
-        this.correoCliente = correoCliente;
-        this.telefonoCliente = telefonoCliente;
-        this.fecha = fecha;
-        this.numeroPersonas = numeroPersonas;
-        this.estado = estado;
-        this.comentarios = comentarios;
-    }
-
     // Getters y Setters
-    public Integer getIdReserva() {
+    public int getIdReserva() {
         return idReserva;
     }
 
-    public void setIdReserva(Integer idReserva) {
+    public void setIdReserva(int idReserva) {
         this.idReserva = idReserva;
     }
 
@@ -86,11 +62,11 @@ public class Reserva {
         this.fecha = fecha;
     }
 
-    public Integer getNumeroPersonas() {
+    public int getNumeroPersonas() {
         return numeroPersonas;
     }
 
-    public void setNumeroPersonas(Integer numeroPersonas) {
+    public void setNumeroPersonas(int numeroPersonas) {
         this.numeroPersonas = numeroPersonas;
     }
 
@@ -110,39 +86,27 @@ public class Reserva {
         this.comentarios = comentarios;
     }
 
-    public ConfiguracionFranja getFranja() {
-        return franja;
+    public int getIdFranja() {
+        return idFranja;
     }
 
-    public void setFranja(ConfiguracionFranja franja) {
-        this.franja = franja;
+    public void setIdFranja(int idFranja) {
+        this.idFranja = idFranja;
     }
 
-    public Mesa getMesa() {
-        return mesa;
+    public int getIdMesa() {
+        return idMesa;
     }
 
-    public void setMesa(Mesa mesa) {
-        this.mesa = mesa;
+    public void setIdMesa(int idMesa) {
+        this.idMesa = idMesa;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Integer getIdUsuario() {
+        return idUsuario;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    @Override
-    public String toString() {
-        return "Reserva{" +
-                "idReserva=" + idReserva +
-                ", nombreCliente='" + nombreCliente + '\'' +
-                ", correoCliente='" + correoCliente + '\'' +
-                ", fecha=" + fecha +
-                ", numeroPersonas=" + numeroPersonas +
-                ", estado='" + estado + '\'' +
-                '}';
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
     }
 }

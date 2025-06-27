@@ -1,37 +1,21 @@
 package com.example.demo.Entities;
 
-import jakarta.persistence.*;
-import java.util.List;
-import java.util.ArrayList;
-
-@Entity
-@Table(name = "TipoMesa")
 public class TipoMesa {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idTipoMesa;
 
+    private int idTipoMesa;
     private String nombre;
     private String descripcion;
 
-    @OneToMany(mappedBy = "tipoMesa")
-    private List<Mesa> mesas = new ArrayList<>();
-
-    // Constructores
+    // Constructor vacío
     public TipoMesa() {
     }
 
-    public TipoMesa(String nombre, String descripcion) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-    }
-
     // Getters y Setters
-    public Integer getIdTipoMesa() {
+    public int getIdTipoMesa() {
         return idTipoMesa;
     }
 
-    public void setIdTipoMesa(Integer idTipoMesa) {
+    public void setIdTipoMesa(int idTipoMesa) {
         this.idTipoMesa = idTipoMesa;
     }
 
@@ -49,22 +33,5 @@ public class TipoMesa {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
-    }
-
-    public List<Mesa> getMesas() {
-        return mesas;
-    }
-
-    public void setMesas(List<Mesa> mesas) {
-        this.mesas = mesas;
-    }
-
-    @Override
-    public String toString() {
-        return "TipoMesa{" +
-                "idTipoMesa=" + idTipoMesa +
-                ", nombre='" + nombre + '\'' +
-                ", descripcion='" + descripcion + '\'' +
-                '}';
     }
 }

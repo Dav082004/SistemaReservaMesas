@@ -1,40 +1,30 @@
 package com.example.demo.Entities;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "Usuarios")
+/**
+ * Representa a un usuario en el sistema.
+ * Esta clase es un POJO (Plain Old Java Object) que mapea directamente la tabla 'Usuarios' de la base de datos.
+ */
 public class Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idUsuario")
-    private Integer idUsuario;
-
-    @Column(name = "nombreCompleto")
+    private int idUsuario;
     private String nombreCompleto;
-
-    @Column(name = "correo", unique = true, nullable = false)
     private String correo;
-
-    @Column(name = "telefono")
     private String telefono;
-
-    @Column(name = "usuario", unique = true, nullable = false)
     private String usuario;
-
-    @Column(name = "contrasena", nullable = false)
     private String contrasena;
-
-    @Column(name = "rol", nullable = false)
     private String rol;
 
-    // Constructores
+    /**
+     * Constructor por defecto.
+     */
     public Usuario() {
     }
 
-    public Usuario(String nombreCompleto, String correo, String telefono, String usuario, String contrasena,
-            String rol) {
+    /**
+     * Constructor para crear un nuevo usuario sin ID (ya que el ID es autogenerado por la base de datos).
+     */
+    public Usuario(String nombreCompleto, String correo, String telefono, String usuario, String contrasena, String rol) {
         this.nombreCompleto = nombreCompleto;
         this.correo = correo;
         this.telefono = telefono;
@@ -43,12 +33,13 @@ public class Usuario {
         this.rol = rol;
     }
 
-    // Getters y Setters
-    public Integer getIdUsuario() {
+    // --- Getters y Setters ---
+
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Integer idUsuario) {
+    public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }
 
@@ -99,6 +90,8 @@ public class Usuario {
     public void setRol(String rol) {
         this.rol = rol;
     }
+
+    // --- Método toString (útil para depuración) ---
 
     @Override
     public String toString() {

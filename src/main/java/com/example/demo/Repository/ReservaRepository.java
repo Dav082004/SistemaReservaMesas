@@ -1,66 +1,27 @@
 package com.example.demo.Repository;
 
-import com.example.demo.Entities.*;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.example.demo.Entities.Reserva;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Repository
-public interface ReservaRepository extends JpaRepository<Reserva, Integer>, JpaSpecificationExecutor<Reserva> {
-
-    /**
-     * Cuenta cuántas personas ya han reservado en una fecha y franja específicas.
-     */
-    @Query("SELECT COALESCE(SUM(r.numeroPersonas), 0) FROM Reserva r WHERE r.fecha = :fecha AND r.franja.idFranja = :idFranja AND r.estado = 'CONFIRMADA'")
-    Integer countPersonasByFechaAndFranja(@Param("fecha") LocalDate fecha, @Param("idFranja") Integer idFranja);
-
-    /**
-     * Cuenta cuántas mesas ya se han consumido en una fecha y franja.
-     * Cada 5 personas ocupan 1 mesa (redondeo hacia arriba).
-     */
-    @Query("SELECT COALESCE(SUM(CEIL(r.numeroPersonas / 5.0)), 0) FROM Reserva r WHERE r.fecha = :fecha AND r.franja.idFranja = :idFranja AND r.estado = 'CONFIRMADA'")
-    Integer countMesasByFechaAndFranja(@Param("fecha") LocalDate fecha, @Param("idFranja") Integer idFranja);
-
-    /**
-     * Busca si un usuario ya tiene una reserva para un día específico.
-     */
-    List<Reserva> findByUsuarioAndFecha(Usuario usuario, LocalDate fecha);
-
-    /**
-     * Busca todas las reservas para una fecha específica.
-     */
-    List<Reserva> findByFecha(LocalDate fecha);
-
-    /**
-     * Busca reservas por usuario
-     */
-    List<Reserva> findByUsuario(Usuario usuario);
-
-    /**
-     * Busca reservas por estado
-     */
-    List<Reserva> findByEstado(String estado);
-
-    /**
-     * Busca reservas futuras de un usuario
-     */
-    @Query("SELECT r FROM Reserva r WHERE r.usuario = :usuario AND r.fecha >= :fecha ORDER BY r.fecha ASC")
-    List<Reserva> findReservasFuturasByUsuario(@Param("usuario") Usuario usuario, @Param("fecha") LocalDate fecha);
-
-    /**
-     * Cuenta las reservas por franja y fecha
-     */
-    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.franja.idFranja = :idFranja AND r.fecha = :fecha AND r.estado = 'CONFIRMADA'")
-    Long countByFranjaAndFecha(@Param("idFranja") Integer idFranja, @Param("fecha") LocalDate fecha);
-
-    /**
-     * Cuenta las mesas reservadas para un tipo específico en una fecha y franja.
-     */
-    @Query("SELECT COALESCE(SUM(CEIL(r.numeroPersonas / 5.0)), 0) FROM Reserva r WHERE r.fecha = :fecha AND r.franja.idFranja = :idFranja AND r.mesa.tipoMesa.idTipoMesa = :idTipoMesa AND r.estado = 'CONFIRMADA'")
-    Integer countMesasByFechaAndFranjaAndTipoMesa(@Param("fecha") LocalDate fecha, @Param("idFranja") Integer idFranja,
-            @Param("idTipoMesa") Integer idTipoMesa);
+public class ReservaRepository {
+    private final JdbcTemplate jdbcTemplate;
+    public ReservaRepository(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate; }
+    
+    public void save(Reserva reserva) {
+        jdbcTemplate.update("INSERT INTO Reserva (nombreCliente, correoCliente, telefonoCliente, fecha, numeroPersonas, estado, comentarios, idFranja, idMesa, idUsuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                reserva.getNombreCliente(), reserva.getCorreoCliente(), reserva.getTelefonoCliente(), reserva.getFecha(), reserva.getNumeroPersonas(), reserva.getEstado(), reserva.getComentarios(), reserva.getIdFranja(), reserva.getIdMesa(), reserva.getIdUsuario());
+    }
+    
+    public int countByUsuarioAndFecha(int idUsuario, LocalDate fecha) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM Reserva WHERE idUsuario = ? AND fecha = ?", Integer.class, idUsuario, fecha);
+        return (count != null) ? count : 0;
+    }
+    
+    public Set<Integer> findMesasOcupadasIds(LocalDate fecha, int idFranja) {
+        return Set.copyOf(jdbcTemplate.queryForList("SELECT idMesa FROM Reserva WHERE fecha = ? AND idFranja = ?", Integer.class, fecha, idFranja));
+    }
 }

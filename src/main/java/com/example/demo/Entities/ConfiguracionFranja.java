@@ -1,34 +1,23 @@
 package com.example.demo.Entities;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "ConfiguracionFranja")
 public class ConfiguracionFranja {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idFranja;
 
+    private int idFranja;
     private String franjaHoraria;
-    private Integer capacidadMaxima;
-    private Integer cantidadMesas;
+    private int capacidadMaxima;
+    private int cantidadMesas;
 
-    // Constructores
+    // Constructor vacío
     public ConfiguracionFranja() {
     }
 
-    public ConfiguracionFranja(String franjaHoraria, Integer capacidadMaxima, Integer cantidadMesas) {
-        this.franjaHoraria = franjaHoraria;
-        this.capacidadMaxima = capacidadMaxima;
-        this.cantidadMesas = cantidadMesas;
-    }
-
     // Getters y Setters
-    public Integer getIdFranja() {
+    public int getIdFranja() {
         return idFranja;
     }
 
-    public void setIdFranja(Integer idFranja) {
+    public void setIdFranja(int idFranja) {
         this.idFranja = idFranja;
     }
 
@@ -40,29 +29,19 @@ public class ConfiguracionFranja {
         this.franjaHoraria = franjaHoraria;
     }
 
-    public Integer getCapacidadMaxima() {
+    public int getCapacidadMaxima() {
         return capacidadMaxima;
     }
 
-    public void setCapacidadMaxima(Integer capacidadMaxima) {
+    public void setCapacidadMaxima(int capacidadMaxima) {
         this.capacidadMaxima = capacidadMaxima;
     }
 
-    public Integer getCantidadMesas() {
+    public int getCantidadMesas() {
         return cantidadMesas;
     }
 
-    public void setCantidadMesas(Integer cantidadMesas) {
+    public void setCantidadMesas(int cantidadMesas) {
         this.cantidadMesas = cantidadMesas;
-    }
-
-    @Override
-    public String toString() {
-        return "ConfiguracionFranja{" +
-                "idFranja=" + idFranja +
-                ", franjaHoraria='" + franjaHoraria + '\'' +
-                ", capacidadMaxima=" + capacidadMaxima +
-                ", cantidadMesas=" + cantidadMesas +
-                '}';
     }
 }

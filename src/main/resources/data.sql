@@ -1,42 +1,41 @@
--- Datos iniciales básicos - inserción simple
+-- Inserta datos iniciales en la tabla Usuarios
 
--- Tipos de Mesa (solo nombre y descripcion segun la entidad TipoMesa)
-INSERT INTO TIPO_MESA (nombre, descripcion) VALUES 
-('Mesa comun', 'Mesa estandar del restaurante'),
-('Mesa en terraza', 'Mesa ubicada en la terraza con vista'),
-('Mesa privada', 'Mesa en area privada para mayor intimidad'),
-('Mesa cerca a ventana', 'Mesa con vista hacia el exterior');
+-- IMPORTANTE: En una aplicación real, las contraseñas DEBEN ser hasheadas (ej: con BCrypt).
+-- Por ahora, las guardamos como texto plano solo para fines de desarrollo y prueba.
 
--- Franjas Horarias (segun la entidad ConfiguracionFranja)
-INSERT INTO CONFIGURACION_FRANJA (franja_horaria, capacidad_maxima, cantidad_mesas) VALUES 
-('Desayuno 07:00-10:00', 50, 12),
-('Almuerzo temprano 11:00-13:00', 40, 10),
-('Almuerzo 13:00-15:00', 60, 12),
-('Tarde 15:00-17:00', 30, 8),
-('Cena temprana 17:00-19:00', 45, 10),
-('Cena 19:00-21:00', 60, 12),
-('Cena tardia 21:00-23:00', 35, 8);
+-- Usuario con rol de Administrador
+INSERT INTO Usuarios (nombreCompleto, correo, telefono, usuario, contrasena, rol) VALUES
+('Admin Principal', 'admin@sietesopas.com', '999888777', 'admin', 'admin123', 'ADMINISTRADOR');
 
--- Mesas (solo capacidad e idTipoMesa segun la entidad Mesa)
-INSERT INTO MESA (capacidad, id_tipo_mesa) VALUES 
--- Mesas comunes
-(4, 1),
-(4, 1),
-(2, 1),
-(4, 1),
--- Mesas en terraza
-(4, 2),
-(6, 2),
-(4, 2),
--- Mesas privadas
-(6, 3),
-(8, 3),
--- Mesas cerca a ventana
-(2, 4),
-(4, 4),
-(4, 4);
+-- Usuario con rol de Cliente/Usuario
+INSERT INTO Usuarios (nombreCompleto, correo, telefono, usuario, contrasena, rol) VALUES
+('Carlos Velez', 'carlos.velez@email.com', '111222333', 'carlosv', 'usuario123', 'USUARIO');
 
--- Usuarios de prueba (segun la entidad Usuario)
-INSERT INTO USUARIOS (nombre_completo, correo, telefono, usuario, contrasena, rol) VALUES 
-('Admin Sistema', 'admin@7sopas.com', '1234567890', 'admin', 'admin123', 'ADMIN'),
-('Usuario Prueba', 'user@7sopas.com', '0987654321', 'user', 'user123', 'USER');
+-- Inserta datos iniciales en la tabla TipoMesa (Regla #7)
+INSERT INTO TipoMesa (nombre, descripcion) VALUES
+('Mesa Común', 'Mesas estándar en el salón principal.'),
+('Mesa en Terraza', 'Disfruta del aire libre en nuestra cómoda terraza.'),
+('Mesa Privada', 'Un espacio reservado para ocasiones especiales.'),
+('Mesa Cerca a la Ventana', 'Disfruta de la vista mientras comes.');
+
+
+-- Inserta datos iniciales en la tabla ConfiguracionFranja (Reglas #4 y #5)
+-- idFranja, franjaHoraria, capacidadMaxima (personas), cantidadMesas
+INSERT INTO ConfiguracionFranja (franjaHoraria, capacidadMaxima, cantidadMesas) VALUES
+('10:00 - 12:00', 100, 20),
+('12:00 - 14:00', 100, 20),
+('14:00 - 16:00', 100, 20),
+('16:00 - 18:00', 100, 20),
+('18:00 - 20:00', 100, 20),
+('20:00 - 22:00', 100, 20),
+('22:00 - 00:00', 100, 20);
+
+-- Inserta 20 mesas físicas (5 de cada tipo, como indica la Regla #7)
+-- idMesa 1-5 son Común (idTipoMesa=1)
+INSERT INTO Mesa (idTipoMesa, capacidad) VALUES (1, 5), (1, 5), (1, 5), (1, 5), (1, 5);
+-- idMesa 6-10 son Terraza (idTipoMesa=2)
+INSERT INTO Mesa (idTipoMesa, capacidad) VALUES (2, 5), (2, 5), (2, 5), (2, 5), (2, 5);
+-- idMesa 11-15 son Privada (idTipoMesa=3)
+INSERT INTO Mesa (idTipoMesa, capacidad) VALUES (3, 5), (3, 5), (3, 5), (3, 5), (3, 5);
+-- idMesa 16-20 son Cerca a la ventana (idTipoMesa=4)
+INSERT INTO Mesa (idTipoMesa, capacidad) VALUES (4, 5), (4, 5), (4, 5), (4, 5), (4, 5);

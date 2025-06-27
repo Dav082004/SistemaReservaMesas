@@ -1,26 +1,23 @@
 package com.example.demo.dto;
 
-public class UsuarioRegistroDto {
+/**
+ * DTO (Data Transfer Object) para manejar los datos del formulario de registro.
+ * Solo contiene los campos que el usuario debe proporcionar.
+ */
+public class UsuarioRegistroDTO {
+
     private String nombreCompleto;
     private String correo;
     private String telefono;
     private String usuario;
     private String contrasena;
 
-    // Constructores
-    public UsuarioRegistroDto() {
+    // --- Constructor vacío ---
+    public UsuarioRegistroDTO() {
     }
 
-    public UsuarioRegistroDto(String nombreCompleto, String correo, String telefono, String usuario,
-            String contrasena) {
-        this.nombreCompleto = nombreCompleto;
-        this.correo = correo;
-        this.telefono = telefono;
-        this.usuario = usuario;
-        this.contrasena = contrasena;
-    }
+    // --- Getters y Setters ---
 
-    // Getters y Setters
     public String getNombreCompleto() {
         return nombreCompleto;
     }
@@ -59,15 +56,5 @@ public class UsuarioRegistroDto {
 
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
-    }
-
-    @Override
-    public String toString() {
-        return "UsuarioRegistroDto{" +
-                "nombreCompleto='" + nombreCompleto + '\'' +
-                ", correo='" + correo + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", usuario='" + usuario + '\'' +
-                '}';
     }
 }

@@ -1,124 +1,89 @@
 package com.example.demo.Controller;
 
-import com.example.demo.facade.UsuarioFacade;
-import com.example.demo.facade.ReservaFacade;
-import com.example.demo.dto.ReservaDTO;
+import com.example.demo.dto.UsuarioRegistroDTO; // Importar el DTO
 import com.example.demo.Entities.Usuario;
+import com.example.demo.Services.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute; // Usar ModelAttribute para el DTO
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import jakarta.servlet.http.HttpSession;
-import java.util.List;
 
-/**
- * Controlador para las funcionalidades del usuario
- * Maneja perfil y operaciones específicas de usuarios
- */
+import java.util.Optional;
+
 @Controller
-@RequestMapping("/usuario")
 public class UsuarioController {
 
-    private final UsuarioFacade usuarioFacade;
-    private final ReservaFacade reservaFacade;
+    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioFacade usuarioFacade, ReservaFacade reservaFacade) {
-        this.usuarioFacade = usuarioFacade;
-        this.reservaFacade = reservaFacade;
+    @Autowired
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
-    /**
-     * Muestra el perfil del usuario
-     */
-    @GetMapping("/perfil")
-    public String mostrarPerfil(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioSesion(session);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Debe iniciar sesión para acceder a esta página");
-            return "redirect:/login";
-        }
-
-        // Verificar que es un usuario normal
-        if (!"USER".equals(usuario.getRol())) {
-            return "redirect:/admin";
-        }
-
-        // Obtener reservas futuras del usuario
-        List<ReservaDTO> reservasFuturas = reservaFacade.obtenerReservasFuturasUsuario(usuario);
-        List<ReservaDTO> todasLasReservas = reservaFacade.obtenerReservasUsuario(usuario);
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("reservasFuturas", reservasFuturas);
-        model.addAttribute("todasLasReservas", todasLasReservas);
-
-        return "perfilu"; // perfilu.jsp
+    // Muestra la página de login
+    @GetMapping("/login")
+    public String mostrarFormularioLogin() {
+        return "login";
     }
 
-    /**
-     * Cancela una reserva del usuario
-     */
-    @PostMapping("/cancelar-reserva/{idReserva}")
-    public String cancelarReserva(@PathVariable Integer idReserva,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioSesion(session);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Debe iniciar sesión para realizar esta acción");
-            return "redirect:/login";
+    // Procesa el formulario de login
+    @PostMapping("/login")
+    public String procesarLogin(@RequestParam String usuario, @RequestParam String contrasena, HttpServletRequest request) {
+        Optional<Usuario> optUsuario = usuarioService.validarLogin(usuario, contrasena);
+
+        if (optUsuario.isPresent()) {
+            HttpSession session = request.getSession(true);
+            session.setAttribute("usuario", optUsuario.get());
+            return "redirect:/"; 
+        } else {
+            return "redirect:/login?error";
         }
+    }
+
+    // Muestra la página de registro
+    @GetMapping("/register")
+    public String mostrarFormularioRegistro() {
+        return "register";
+    }
+
+    // Procesa el formulario de registro usando el DTO
+    @PostMapping("/register")
+    public String procesarRegistro(@ModelAttribute UsuarioRegistroDTO usuarioDTO, Model model, RedirectAttributes redirectAttributes) {
+        
+        // 1. Mapear el DTO al Modelo
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setNombreCompleto(usuarioDTO.getNombreCompleto());
+        nuevoUsuario.setCorreo(usuarioDTO.getCorreo());
+        nuevoUsuario.setTelefono(usuarioDTO.getTelefono());
+        nuevoUsuario.setUsuario(usuarioDTO.getUsuario());
+        nuevoUsuario.setContrasena(usuarioDTO.getContrasena());
+        // No se mapea el rol, eso se define en la capa de servicio.
 
         try {
-            boolean cancelada = reservaFacade.cancelarReserva(idReserva, usuario);
-            if (cancelada) {
-                redirectAttributes.addFlashAttribute("successMessage", "Reserva cancelada exitosamente");
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "No se pudo cancelar la reserva");
-            }
+            // 2. Llamar al servicio con el objeto del Modelo
+            usuarioService.registrarUsuario(nuevoUsuario);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "¡Registro exitoso! Por favor, inicia sesión.");
+            return "redirect:/login";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/usuario/perfil";
-    }    /**
-     * Actualiza la información del perfil del usuario
-     */
-    @PostMapping("/actualizar-perfil")
-    public String actualizarPerfil(@ModelAttribute Usuario usuarioActualizado,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioSesion(session);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Debe iniciar sesión para realizar esta acción");
-            return "redirect:/login";
-        }
-
-        try {
-            // Mantener datos importantes del usuario original
-            usuarioActualizado.setIdUsuario(usuario.getIdUsuario());
-            usuarioActualizado.setRol(usuario.getRol());
-            usuarioActualizado.setUsuario(usuario.getUsuario()); // No permitir cambio de username
-
-            // Si no se proporciona nueva contraseña, mantener la actual
-            if (usuarioActualizado.getContrasena() == null || usuarioActualizado.getContrasena().trim().isEmpty()) {
-                usuarioActualizado.setContrasena(usuario.getContrasena());
-            }
-
-            Usuario usuarioGuardado = usuarioFacade.actualizarUsuario(usuarioActualizado);
-
-            // Actualizar la sesión
-            session.setAttribute("usuarioLogueado", usuarioGuardado);
-            session.setAttribute("nombreUsuario", usuarioGuardado.getNombreCompleto());
-
-            redirectAttributes.addFlashAttribute("successMessage", "Perfil actualizado exitosamente");
-            return "redirect:/usuario/perfil";        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/usuario/perfil";
+            model.addAttribute("errorMessage", e.getMessage());
+            return "register";
         }
     }
-
-    /**
-     * Método helper para obtener el usuario de la sesión
-     */
-    private Usuario obtenerUsuarioSesion(HttpSession session) {
-        return (Usuario) session.getAttribute("usuarioLogueado");
+    
+    // Procesa el cierre de sesión
+    @PostMapping("/logout")
+    public String procesarLogout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate(); 
+        }
+        return "redirect:/login?logout";
     }
 }

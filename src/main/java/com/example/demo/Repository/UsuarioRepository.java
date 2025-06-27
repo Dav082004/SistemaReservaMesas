@@ -1,53 +1,90 @@
 package com.example.demo.Repository;
 
 import com.example.demo.Entities.Usuario;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
+
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+public class UsuarioRepository {
 
-    /**
-     * Busca un usuario por su nombre de usuario.
-     * Spring Data JPA creará la implementación automáticamente.
-     * 
-     * @param usuario El nombre de usuario a buscar.
-     * @return Un Optional que contiene el usuario si se encuentra.
-     */
-    Optional<Usuario> findByUsuario(String usuario);
+    private final JdbcTemplate jdbcTemplate;
+    private final UsuarioRowMapper rowMapper = new UsuarioRowMapper();
 
-    /**
-     * Busca un usuario por su correo electrónico.
-     * Útil para verificar si un correo ya está registrado.
-     * 
-     * @param correo El correo a buscar.
-     * @return Un Optional que contiene el usuario si se encuentra.
-     */
-    Optional<Usuario> findByCorreo(String correo);
+    @Autowired
+    public UsuarioRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    /**
-     * Busca usuarios por su rol.
-     * 
-     * @param rol El rol a buscar.
-     * @return Una lista de usuarios con el rol especificado.
-     */
-    List<Usuario> findByRol(String rol);
+    private static final class UsuarioRowMapper implements RowMapper<Usuario> {
+        // ... (el mapRow sigue igual que antes)
+        @Override
+        public Usuario mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Usuario usuario = new Usuario();
+            usuario.setIdUsuario(rs.getInt("idUsuario"));
+            usuario.setNombreCompleto(rs.getString("nombreCompleto"));
+            usuario.setCorreo(rs.getString("correo"));
+            usuario.setTelefono(rs.getString("telefono"));
+            usuario.setUsuario(rs.getString("usuario"));
+            usuario.setContrasena(rs.getString("contrasena"));
+            usuario.setRol(rs.getString("rol"));
+            return usuario;
+        }
+    }
 
-    /**
-     * Verifica si existe un usuario con el nombre de usuario dado.
-     * 
-     * @param usuario El nombre de usuario a verificar.
-     * @return true si existe, false en caso contrario.
-     */
-    boolean existsByUsuario(String usuario);
+    public Optional<Usuario> findById(int id) {
+        String sql = "SELECT * FROM Usuarios WHERE idUsuario = ?";
+        try {
+            Usuario usuario = jdbcTemplate.queryForObject(sql, new Object[]{id}, rowMapper);
+            return Optional.ofNullable(usuario);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 
-    /**
-     * Verifica si existe un usuario con el correo dado.
-     * 
-     * @param correo El correo a verificar.
-     * @return true si existe, false en caso contrario.
-     */
-    boolean existsByCorreo(String correo);
+    public Optional<Usuario> findByUsuario(String username) {
+        String sql = "SELECT * FROM Usuarios WHERE usuario = ?";
+        try {
+            Usuario usuario = jdbcTemplate.queryForObject(sql, new Object[]{username}, rowMapper);
+            return Optional.ofNullable(usuario);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Usuario> findByCorreo(String correo) {
+        String sql = "SELECT * FROM Usuarios WHERE correo = ?";
+        try {
+            Usuario usuario = jdbcTemplate.queryForObject(sql, new Object[]{correo}, rowMapper);
+            return Optional.ofNullable(usuario);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    public void save(Usuario usuario) {
+        String sql = "INSERT INTO Usuarios (nombreCompleto, correo, telefono, usuario, contrasena, rol) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql,
+                usuario.getNombreCompleto(),
+                usuario.getCorreo(),
+                usuario.getTelefono(),
+                usuario.getUsuario(),
+                usuario.getContrasena(),
+                usuario.getRol());
+    }
+    
+    public void update(Usuario usuario) {
+        String sql = "UPDATE Usuarios SET nombreCompleto = ?, telefono = ?, contrasena = ? WHERE idUsuario = ?";
+        jdbcTemplate.update(sql,
+                usuario.getNombreCompleto(),
+                usuario.getTelefono(),
+                usuario.getContrasena(),
+                usuario.getIdUsuario());
+    }
 }

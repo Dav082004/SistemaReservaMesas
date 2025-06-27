@@ -1,70 +1,86 @@
 package com.example.demo.Services;
 
-import org.springframework.stereotype.Service;
-
+import com.example.demo.dto.PerfilDatosDTO;
 import com.example.demo.Entities.Usuario;
 import com.example.demo.Repository.UsuarioRepository;
-import com.example.demo.dto.UsuarioRegistroDto;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
+    @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario registrar(UsuarioRegistroDto registroDTO) {
-        if (usuarioRepository.findByUsuario(registroDTO.getUsuario()).isPresent()) {
-            throw new IllegalStateException("El nombre de usuario ya está en uso.");
+    /**
+     * Valida las credenciales de un usuario.
+     * @return Un Optional con el objeto Usuario si el login es exitoso, o un Optional vacío si falla.
+     */
+    public Optional<Usuario> validarLogin(String username, String password) {
+        Optional<Usuario> optUsuario = usuarioRepository.findByUsuario(username);
+        
+        // ADVERTENCIA DE SEGURIDAD: Comparación de contraseña en texto plano solo para desarrollo.
+        if (optUsuario.isPresent() && optUsuario.get().getContrasena().equals(password)) {
+            return optUsuario;
         }
-        if (usuarioRepository.findByCorreo(registroDTO.getCorreo()).isPresent()) {
-            throw new IllegalStateException("El correo electrónico ya está registrado.");
-        }
-
-        Usuario usuario = new Usuario();
-        usuario.setNombreCompleto(registroDTO.getNombreCompleto());
-        usuario.setCorreo(registroDTO.getCorreo());
-        usuario.setTelefono(registroDTO.getTelefono());
-        usuario.setUsuario(registroDTO.getUsuario());
-
-        // Guardamos la contraseña en texto plano (sin encriptación)
-        usuario.setContrasena(registroDTO.getContrasena());
-
-        usuario.setRol("USER");
-
-        return usuarioRepository.save(usuario);
+        
+        return Optional.empty();
     }
 
-    // --- NUEVO MÉTODO: Actualizar datos del perfil ---
-    @Transactional
-    public void actualizarPerfil(String username, String nombreCompleto, String telefono) {
-        Usuario usuario = usuarioRepository.findByUsuario(username)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado."));
+    /**
+     * Registra un nuevo usuario en el sistema.
+     * @param usuario El objeto Usuario a registrar, ya mapeado desde el DTO.
+     * @throws Exception si el nombre de usuario o correo ya existen.
+     */
+    public void registrarUsuario(Usuario usuario) throws Exception {
+        if (usuarioRepository.findByUsuario(usuario.getUsuario()).isPresent()) {
+            throw new Exception("El nombre de usuario '" + usuario.getUsuario() + "' ya está en uso.");
+        }
+        if (usuarioRepository.findByCorreo(usuario.getCorreo()).isPresent()) {
+            throw new Exception("El correo electrónico '" + usuario.getCorreo() + "' ya está registrado.");
+        }
 
-        usuario.setNombreCompleto(nombreCompleto);
-        usuario.setTelefono(telefono);
-
+        // --- Asignación del rol por defecto ---
+        // Esta es la regla de negocio: todo usuario nuevo es un "USUARIO".
+        usuario.setRol("USUARIO");
+        
+        // ADVERTENCIA DE SEGURIDAD: Aquí se debería hashear la contraseña antes de guardarla.
+        
         usuarioRepository.save(usuario);
     }
 
-    // --- NUEVO MÉTODO: Cambiar la contraseña ---
-    @Transactional
-    public void cambiarContrasena(String username, String contrasenaActual, String nuevaContrasena) {
-        Usuario usuario = usuarioRepository.findByUsuario(username)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado."));
+    // --- NUEVOS MÉTODOS PARA PERFIL ---
 
-        // Verificamos que la contraseña actual sea correcta (comparación directa)
-        if (!contrasenaActual.equals(usuario.getContrasena())) {
-            throw new IllegalStateException("La contraseña actual es incorrecta.");
+    public Usuario actualizarDatosPerfil(int idUsuario, PerfilDatosDTO datosDTO) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        usuario.setNombreCompleto(datosDTO.getNombreCompleto());
+        usuario.setTelefono(datosDTO.getTelefono());
+        
+        usuarioRepository.update(usuario);
+        return usuario;
+    }
+
+    public void cambiarContrasena(int idUsuario, String contrasenaActual, String nuevaContrasena) throws Exception {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // ADVERTENCIA DE SEGURIDAD: Comparación en texto plano.
+        if (!usuario.getContrasena().equals(contrasenaActual)) {
+            throw new Exception("La contraseña actual es incorrecta.");
         }
-
-        // Guardamos la nueva contraseña en texto plano
+        
         usuario.setContrasena(nuevaContrasena);
-
-        usuarioRepository.save(usuario);
+        // ADVERTENCIA DE SEGURIDAD: Aquí se debería hashear la nueva contraseña.
+        
+        usuarioRepository.update(usuario);
     }
 
 }
